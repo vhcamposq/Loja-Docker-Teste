@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ software.name }} - {{ software.version }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            {% if software.icon %}
+                <img src="{{ software.icon.url }}" class="card-img-top p-4" alt="{{ software.name }}" style="height: 200px; object-fit: contain;">
+            {% else %}
+                <div class="text-center py-5 bg-light">
+                    <i class="bi bi-box-seam" style="font-size: 6rem; color: #6c757d;"></i>
+                </div>
+            {% endif %}
+            <div class="card-body text-center">
+                <h4 class="card-title">{{ software.name }}</h4>
+                <p class="text-muted">Versão {{ software.version }}</p>
+                <span class="badge bg-primary mb-3">{{ software.get_category_display }}</span>
+                
+                <div class="d-grid gap-2">
+                    {% if resolved_hostname %}
+                        <button class="btn btn-primary btn-lg install-btn" data-software="{{ software.name }}" data-install-url="{% url 'store:install_software' software.slug %}">
+                            <i class="bi bi-download"></i> Instalar Agora
+                        </button>
+                    {% else %}
+                        <button class="btn btn-primary btn-lg" disabled title="Instalação bloqueada por segurança">
+                            <i class="bi bi-shield-lock"></i> Instalação indisponível
+                        </button>
+                    {% endif %}
+                    {% if software.installer %}
+                        <a href="{{ software.installer.url }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-download"></i> Baixar Instalador
+                        </a>
+                    {% endif %}
+                </div>
+                {% if resolved_hostname %}
+                <div class="alert alert-info mt-3 mb-0" role="alert">
+                    <i class="bi bi-pc-display-horizontal me-2"></i>
+                    Sua máquina foi detectada como: <strong>{{ resolved_hostname }}</strong>
+                </div>
+                {% else %}
+                <div class="alert alert-danger mt-3 mb-0" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Não foi possivel encontrar sua maquina, por motivo de segurança, não é possivel executar nenhuma instalação.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Informações do Software</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-grid me-2"></i>Categoria</span>
+                    <span class="badge bg-primary">{{ software.get_category_display }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-tag me-2"></i>Versão</span>
+                    <span>{{ software.version }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-calendar3 me-2"></i>Atualizado em</span>
+                    <span>{{ software.updated_at|date:"d/m/Y H:i" }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Descrição</h5>
+            </div>
+            <div class="card-body">
+                {% if software.description %}
+                    {{ software.description|linebreaks }}
+                {% else %}
+                    <p class="text-muted fst-italic">Nenhuma descrição fornecida para este software.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if software.install_script %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Script de Instalação</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-light p-3 rounded"><code>{{ software.install_script }}</code></pre>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Botão Voltar -->
+<div class="mt-4">
+    <a href="{% url 'store:software_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar para o Catálogo
+    </a>
+</div>
+
+<!-- Modal de Confirmação de Instalação -->
+<div class="modal fade" id="installModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Instalação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Deseja instalar o software <strong id="softwareName"></strong>?</p>
+                {% if resolved_hostname %}
+                    <div class="mb-3">
+                        <label for="hostname" class="form-label">Hostname da Máquina</label>
+                        <input type="text" class="form-control" id="hostname" name="hostname" value="{{ resolved_hostname|default:'' }}" readonly required>
+                        <div class="form-text">
+                            Detectado automaticamente. Confirme para prosseguir.
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        A tarefa de instalação será criada e o agente na máquina especificada executará a instalação.
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Não foi possivel encontrar sua maquina, por motivo de segurança, não é possivel executar nenhuma instalação.
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmInstall" {% if not resolved_hostname %}disabled{% endif %}>Instalar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configura o modal de confirmação de instalação
+    const installButton = document.querySelector('.install-btn');
+    const modalEl = document.getElementById('installModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    const softwareName = document.getElementById('softwareName');
+    const confirmInstall = document.getElementById('confirmInstall');
+    const hostnameInput = document.getElementById('hostname');
+    
+    if (installButton) {
+        installButton.addEventListener('click', function() {
+            const name = this.getAttribute('data-software');
+            const url = this.getAttribute('data-install-url');
+            
+            softwareName.textContent = name;
+            confirmInstall.href = url;
+            if (hostnameInput) hostnameInput.classList.remove('is-invalid');
+            
+            modal.show();
+        });
+    }
+
+    // Corrige backdrop persistente ao fechar o modal
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        document.body.classList.remove('modal-open');
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    });
+
+    // Cria o formulário dinâmico
+    confirmInstall.addEventListener('click', function() {
+        const hostname = hostnameInput.value.trim();
+        if (!hostname) {
+            hostnameInput.classList.add('is-invalid');
+            return;
+        }
+
+        // Cria um formulário dinâmico
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = confirmInstall.href;
+        
+        // Adiciona o token CSRF
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Adiciona o hostname
+        const hostnameHiddenInput = document.createElement('input');
+        hostnameHiddenInput.type = 'hidden';
+        hostnameHiddenInput.name = 'hostname';
+        hostnameHiddenInput.value = hostname;
+        form.appendChild(hostnameHiddenInput);
+        
+        // Adiciona o formulário à página e envia
+        document.body.appendChild(form);
+        form.submit();
+    });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+
+# Envs
+.env
+venv/
+.env.*
+
+# VCS
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Django
+staticfiles/
+media/
+
+# Docker
+Dockerfile*

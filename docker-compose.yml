@@ -1,0 +1,31 @@
+name: software_store
+version: "3.9"
+
+
+services:
+  web:
+    build:
+      context: .
+    container_name: software_store_web
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: software_store.settings
+    ports:
+      - "8000:8000"
+    volumes:
+      - staticfiles:/app/staticfiles
+      - media:/app/media
+      - sqlite_data:/app/data
+    restart: unless-stopped
+    networks:
+      - appnet
+
+volumes:
+  staticfiles:
+  media:
+  sqlite_data:
+
+networks:
+  appnet:
+    driver: bridge

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5" style="max-width: 400px;">
+  <div class="alert alert-success">
+    Sessão encerrada com sucesso.
+  </div>
+  <a href="{% url 'store:login' %}" class="btn btn-primary w-100">Fazer login novamente</a>
+</div>
+{% endblock %}
