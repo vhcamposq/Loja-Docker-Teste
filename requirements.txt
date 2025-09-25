@@ -1,8 +1,0 @@
-Django
-django-crispy-forms
-crispy-bootstrap5
-django-environ
-Pillow
-python-dotenv
-social-auth-app-django
-PyMySQL
