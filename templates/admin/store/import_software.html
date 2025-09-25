@@ -1,0 +1,179 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script>
+    $(document).ready(function() {
+        // Adiciona validação de arquivo
+        $('form#import-form').on('submit', function(e) {
+            var fileInput = $('#id_json_file');
+            if (fileInput.val() === '') {
+                e.preventDefault();
+                alert('Por favor, selecione um arquivo JSON para importar.');
+                return false;
+            }
+            
+            // Mostra o indicador de carregamento
+            $('#loading').show();
+            return true;
+        });
+        
+        // Atualiza o nome do arquivo selecionado
+        $('.custom-file-input').on('change', function() {
+            var fileName = $(this).val().split('\\').pop();
+            if (fileName) {
+                $(this).next('.custom-file-label').html(fileName);
+            }
+        });
+    });
+</script>
+<style>
+    .import-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+    }
+    .import-section h2 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+        font-size: 1.5rem;
+        color: #333;
+    }
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    .custom-file-label::after {
+        content: "Procurar";
+    }
+    #loading {
+        display: none;
+        margin-top: 1rem;
+    }
+    .help-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .btn-import {
+        min-width: 150px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="import-section">
+        <h2>Importar Softwares</h2>
+        
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle-fill"></i>
+            Utilize esta ferramenta para importar softwares a partir de um arquivo JSON.
+            <a href="{% url 'store:export_software' %}" class="btn btn-sm btn-outline-primary float-right">
+                <i class="bi bi-download"></i> Baixar Modelo
+            </a>
+        </div>
+        
+        <form id="import-form" method="post" action="{% url 'store:import_software' %}" enctype="multipart/form-data" class="mt-4">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_json_file">Arquivo JSON:</label>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="id_json_file" name="json_file" accept=".json" required>
+                    <label class="custom-file-label" for="id_json_file">Selecione o arquivo JSON</label>
+                </div>
+                <div class="help-text">
+                    O arquivo deve estar no formato JSON e seguir a estrutura do modelo fornecido.
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_installer_files">Arquivos de Instalação (opcional):</label>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="id_installer_files" name="installer_files" multiple>
+                    <label class="custom-file-label" for="id_installer_files">Selecione os instaladores</label>
+                </div>
+                <div class="help-text">
+                    Selecione os arquivos de instalação referenciados no JSON.
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_icon_files">Ícones (opcional):</label>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="id_icon_files" name="icon_files" multiple>
+                    <label class="custom-file-label" for="id_icon_files">Selecione os ícones</label>
+                </div>
+                <div class="help-text">
+                    Selecione os arquivos de ícone referenciados no JSON.
+                </div>
+            </div>
+            
+            <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" id="id_update_existing" name="update_existing">
+                <label class="form-check-label" for="id_update_existing">Atualizar softwares existentes</label>
+                <div class="help-text">
+                    Marque esta opção para atualizar softwares que já existam no sistema.
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-import">
+                    <i class="bi bi-upload"></i> Importar
+                </button>
+                <a href="{% url 'admin:store_software_changelist' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x"></i> Cancelar
+                </a>
+                
+                <div id="loading" class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Processando...</span>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div class="import-section">
+        <h3>Instruções de Uso</h3>
+        <ol>
+            <li>Baixe o modelo de arquivo JSON clicando no botão "Baixar Modelo" acima.</li>
+            <li>Preencha o arquivo com os dados dos softwares que deseja importar.</li>
+            <li>Selecione o arquivo JSON preenchido no campo "Arquivo JSON".</li>
+            <li>Opcionalmente, faça upload dos arquivos de instalação e ícones referenciados no JSON.</li>
+            <li>Clique em "Importar" para iniciar o processo de importação.</li>
+        </ol>
+        
+        <h4 class="mt-4">Estrutura do JSON</h4>
+        <pre><code>[
+    {
+        "name": "Nome do Software",
+        "version": "1.0.0",
+        "description": "Descrição detalhada do software",
+        "category": "CATEGORIA",
+        "icon": "nome_do_arquivo.png",
+        "installer": "nome_do_instalador.exe",
+        "install_script": "@echo off\necho Instalando...",
+        "is_active": true
+    },
+    ...
+]</code></pre>
+        
+        <h4>Categorias Válidas</h4>
+        <ul>
+            <li><code>OFFICE</code> - Pacote Office</li>
+            <li><code>BROWSER</code> - Navegadores</li>
+            <li><code>DEVELOPMENT</code> - Desenvolvimento</li>
+            <li><code>DESIGN</code> - Design</li>
+            <li><code>SECURITY</code> - Segurança</li>
+            <li><code>UTILITIES</code> - Utilitários</li>
+            <li><code>OTHER</code> - Outros</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

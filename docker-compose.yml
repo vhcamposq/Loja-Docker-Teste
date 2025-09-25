@@ -1,0 +1,39 @@
+name: software_store
+
+
+services:
+  web:
+    build:
+      context: .
+    container_name: software_store_web
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: software_store.settings
+      DEBUG: "1"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+      # Habilita o Django a servir arquivos de mídia no container (apenas dev)
+      SERVE_MEDIA: "1"
+      # Banco SQLite persistente no bind mount /app/data
+      DATABASE_URL: sqlite:////app/data/db.sqlite3
+      # Raízes opcionais para sobrescrever (entrypoint usará estas se definidas)
+      # MEDIA_ROOT: /app/media
+      # STATIC_ROOT: /app/staticfiles
+    ports:
+      - "8000:8000"
+    # Garante execução do entrypoint para criar diretórios e rodar migrações
+    entrypoint: ["/entrypoint.sh"]
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      # Código-fonte em modo desenvolvimento (evita rebuild para cada mudança)
+      - ./:/app
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge

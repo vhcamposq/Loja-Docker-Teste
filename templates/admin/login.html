@@ -1,0 +1,55 @@
+{% extends "admin/login.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .login .form-row #id_username, .login .form-row #id_password {
+        padding: 8px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .login .submit-row {
+        padding: 1em 0 0 0;
+    }
+    .login .submit-row input {
+        width: 100%;
+        padding: 8px;
+    }
+    .login #header {
+        background-color: #0d6efd;
+        color: white;
+    }
+    .login #content {
+        padding: 20px 40px;
+    }
+    .login .form-row label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    .login .form-row {
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="{% static 'images/logo.png' %}" alt="Logo" height="40" style="margin-right: 10px;">
+        {{ site_header|default:_('Administração') }}
+    </a>
+</h1>
+{% endblock %}
+
+{% block content_title %}
+<h2>Bem-vindo à Área Administrativa</h2>
+<p>Por favor, faça login para acessar o painel de controle.</p>
+{% endblock %}
+
+{% block footer %}
+<div class="footer" style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
+    &copy; {% now "Y" %} {{ site_title }}. Todos os direitos reservados.
+</div>
+{% endblock %}

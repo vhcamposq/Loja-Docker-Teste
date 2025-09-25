@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}Catálogo de Softwares{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Catálogo de Softwares</h1>
+        {% if resolved_hostname %}
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-pc-display-horizontal me-2"></i>
+            Sua máquina foi detectada como: <strong>{{ resolved_hostname }}</strong>
+        </div>
+        {% endif %}
+        
+        <!-- Filtro de Categorias -->
+        <div class="mb-4">
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'store:software_list' %}" 
+                   class="btn btn-outline-primary {% if not current_category %}active{% endif %}">
+                    Todos
+                </a>
+                {% for key, value in categories.items %}
+                    <a href="?category={{ key }}" 
+                       class="btn btn-outline-primary {% if current_category == key %}active{% endif %}">
+                        {{ value }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Lista de Softwares -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for software in softwares %}
+                <div class="col">
+                    <div class="card h-100 software-card">
+                        {% if software.icon %}
+                            <img src="{{ software.icon.url }}" class="card-img-top p-3" alt="{{ software.name }}" style="height: 150px; object-fit: contain;">
+                        {% else %}
+                            <div class="text-center py-5 bg-light">
+                                <i class="bi bi-box-seam" style="font-size: 4rem; color: #6c757d;"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title">{{ software.name }}</h5>
+                                    <p class="text-muted mb-2">Versão {{ software.version }}</p>
+                                </div>
+                                <span class="badge bg-primary">{{ software.get_category_display }}</span>
+                            </div>
+                            
+                            <p class="card-text">
+                                {% if software.description|length > 100 %}
+                                    {{ software.description|slice:":100" }}...
+                                {% else %}
+                                    {{ software.description|default:"Sem descrição disponível." }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent border-top-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{% url 'store:software_detail' software.slug %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-info-circle"></i> Detalhes
+                                </a>
+                                <button class="btn btn-sm btn-primary install-btn" data-software="{{ software.name }}" data-install-url="{% url 'store:install_software' software.slug %}">
+                                    <i class="bi bi-download"></i> Instalar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        Nenhum software encontrado com os critérios de busca.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paginação -->
+        {% if is_paginated %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Anterior</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if current_category %}&category={{ current_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Próximo</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Instalação -->
+<div class="modal fade" id="installModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Instalação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Deseja instalar o software <strong id="softwareName"></strong>?</p>
+                {% if resolved_hostname %}
+                    <div class="mb-3">
+                        <label for="hostname" class="form-label">Hostname da Máquina</label>
+                        <input type="text" class="form-control" id="hostname" name="hostname" value="{{ resolved_hostname|default:'' }}" readonly required>
+                        <div class="form-text">
+                            Detectado automaticamente. Confirme para prosseguir.
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        A tarefa de instalação será criada e o agente na máquina especificada executará a instalação.
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Não foi possivel encontrar sua maquina, por motivo de segurança, não é possivel executar nenhuma instalação.
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmInstall" {% if not resolved_hostname %}disabled{% endif %}>Instalar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configura o modal de confirmação de instalação
+    const installButtons = document.querySelectorAll('.install-btn');
+    const modalEl = document.getElementById('installModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    const softwareName = document.getElementById('softwareName');
+    const confirmInstall = document.getElementById('confirmInstall');
+    const hostnameInput = document.getElementById('hostname');
+    
+    installButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const name = this.getAttribute('data-software');
+            const url = this.getAttribute('data-install-url');
+            
+            softwareName.textContent = name;
+            confirmInstall.href = url;
+            if (hostnameInput) hostnameInput.classList.remove('is-invalid');
+            modal.show();
+        });
+    });
+
+    // Corrige backdrop persistente ao fechar o modal
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        document.body.classList.remove('modal-open');
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    });
+
+    // Cria o formulário dinâmico
+    confirmInstall.addEventListener('click', function() {
+        if (confirmInstall.hasAttribute('disabled')) return;
+        const hostname = hostnameInput.value.trim();
+        if (!hostname) {
+            hostnameInput.classList.add('is-invalid');
+            return;
+        }
+
+        // Cria um formulário dinâmico
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = confirmInstall.href;
+        
+        // Adiciona o token CSRF
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Adiciona o hostname
+        const hostnameInputHidden = document.createElement('input');
+        hostnameInputHidden.type = 'hidden';
+        hostnameInputHidden.name = 'hostname';
+        hostnameInputHidden.value = hostname;
+        form.appendChild(hostnameInputHidden);
+        
+        // Adiciona o formulário à página e envia
+        document.body.appendChild(form);
+        form.submit();
+    });
+});
+</script>
+{% endblock %}
+
