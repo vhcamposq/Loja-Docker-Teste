@@ -1,31 +1,23 @@
-name: software_store
 version: "3.9"
-
 
 services:
   web:
-    build:
-      context: .
+    build: .
     container_name: software_store_web
-    env_file:
-      - .env
-    environment:
-      DJANGO_SETTINGS_MODULE: software_store.settings
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     volumes:
-      - staticfiles:/app/staticfiles
-      - media:/app/media
-      - sqlite_data:/app/data
+      - media_data:/app/media
+      - staticfiles_data:/app/staticfiles
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
-    networks:
-      - appnet
 
 volumes:
-  staticfiles:
-  media:
-  sqlite_data:
-
-networks:
-  appnet:
-    driver: bridge
+  media_data:
+  staticfiles_data:

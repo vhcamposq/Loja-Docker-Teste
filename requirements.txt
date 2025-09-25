@@ -6,7 +6,3 @@ Pillow
 python-dotenv
 social-auth-app-django
 PyMySQL
-gunicorn
-whitenoise
-dj-database-url
-psycopg2-binary

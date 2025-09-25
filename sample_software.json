@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Google Chrome",
+    "version": "114.0.5735.199",
+    "description": "Navegador rápido, seguro e fácil de usar, com tecnologia do Google",
+    "category": "BROWSER",
+    "icon": "chrome_icon.png",
+    "installer": "ChromeSetup.exe",
+    "install_script": "@echo off\necho Instalando Google Chrome...\nstart /wait ChromeSetup.exe /silent /install\necho Instalação concluída!",
+    "is_active": true
+  },
+  {
+    "name": "Mozilla Firefox",
+    "version": "115.0.2",
+    "description": "Navegador rápido, privativo e cheio de recursos da Fundação Mozilla",
+    "category": "BROWSER",
+    "icon": "firefox_icon.png",
+    "installer": "Firefox Setup 115.0.2.exe",
+    "install_script": "@echo off\necho Instalando Mozilla Firefox...\nstart /wait \"Firefox Setup 115.0.2.exe\" -ms\necho Instalação concluída!",
+    "is_active": true
+  },
+  {
+    "name": "LibreOffice",
+    "version": "7.5.5",
+    "description": "Suíte de escritório livre e de código aberto",
+    "category": "OFFICE",
+    "icon": "libreoffice_icon.png",
+    "installer": "LibreOffice_7.5.5_Win_x64.msi",
+    "install_script": "@echo off\necho Instalando LibreOffice...\nmsiexec /i \"LibreOffice_7.5.5_Win_x64.msi\" /qn\necho Instalação concluída!",
+    "is_active": true
+  },
+  {
+    "name": "Visual Studio Code",
+    "version": "1.80.1",
+    "description": "Editor de código-fonte leve, mas poderoso, desenvolvido pela Microsoft",
+    "category": "DEVELOPMENT",
+    "icon": "vscode_icon.png",
+    "installer": "VSCodeSetup-x64-1.80.1.exe",
+    "install_script": "@echo off\necho Instalando Visual Studio Code...\nstart /wait VSCodeSetup-x64-1.80.1.exe /verysilent /mergetasks=!runcode,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath\necho Instalação concluída!",
+    "is_active": true
+  },
+  {
+    "name": "7-Zip",
+    "version": "23.01",
+    "description": "Compactador e descompactador de arquivos com alta taxa de compressão",
+    "category": "UTILITIES",
+    "icon": "7zip_icon.png",
+    "installer": "7z2301-x64.exe",
+    "install_script": "@echo off\necho Instalando 7-Zip...\nstart /wait 7z2301-x64.exe /S\necho Instalação concluída!",
+    "is_active": true
+  }
+]

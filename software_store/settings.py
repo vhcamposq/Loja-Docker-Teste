@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,15 +23,12 @@ load_dotenv()
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-unsafe-secret-key')
+SECRET_KEY = 'django-insecure-67k2wml5+(zbb!ep#f^tlng%@m*_6a$5@y0(3a2hjv39h44a$#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1', 'true', 'yes')
+DEBUG = True
 
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '' if DEBUG else '*').split(',') if h.strip()] or (['*'] if DEBUG else [])
-
-# CSRF trusted origins (comma-separated URLs). Example: https://example.com,https://www.example.com
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -70,8 +66,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # WhiteNoise must be directly after SecurityMiddleware
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -114,22 +108,11 @@ WSGI_APPLICATION = 'software_store.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{(BASE_DIR / 'db.sqlite3').as_posix()}",
-        conn_max_age=600,
-        ssl_require=False,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
-
-# Respect proxy headers if running behind a reverse proxy (e.g., Traefik/Nginx)
-_proxy_hdr = os.environ.get('SECURE_PROXY_SSL_HEADER')
-if _proxy_hdr:
-    try:
-        name, value = _proxy_hdr.split(',')
-        SECURE_PROXY_SSL_HEADER = (name.strip(), value.strip())
-    except ValueError:
-        # Ignore invalid format
-        pass
 
 
 # Password validation
@@ -169,8 +152,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-# Enable WhiteNoise compressed manifest storage for efficient static files
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

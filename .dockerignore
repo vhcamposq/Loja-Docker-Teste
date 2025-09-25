@@ -1,27 +1,23 @@
-# Python
+# Python cache
 __pycache__/
-*.py[cod]
+*.pyc
 *.pyo
 *.pyd
-*.so
-*.egg-info/
 
-# Envs
-.env
+# Virtual envs
 venv/
+.env
 .env.*
 
-# VCS
+# Django runtime
+media/
+staticfiles/
+db.sqlite3
+
+# VCS / IDE
 .git/
 .gitignore
-
-# OS
+.idea/
+.vscode/
 .DS_Store
 Thumbs.db
-
-# Django
-staticfiles/
-media/
-
-# Docker
-Dockerfile*
