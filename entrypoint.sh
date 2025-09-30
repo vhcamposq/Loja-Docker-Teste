@@ -15,14 +15,22 @@ if [ -n "$STATIC_ROOT" ]; then
   STATICFILES_DIR="$STATIC_ROOT"
 fi
 
-# Garante que os diretórios existam
+echo "[entrypoint] Garantindo diretórios: $MEDIA_DIR $STATICFILES_DIR $DATA_DIR"
 mkdir -p "$MEDIA_DIR" "$STATICFILES_DIR" "$DATA_DIR"
 
-# Migrações
-python manage.py migrate --noinput
+echo "[entrypoint] Rodando migrações"
+python manage.py migrate --noinput || true
 
-# Coleta arquivos estáticos (seguro repetir)
+echo "[entrypoint] Coletando arquivos estáticos"
 python manage.py collectstatic --noinput || true
 
+# Se nenhum comando foi passado, define padrão para iniciar o servidor de desenvolvimento
+if [ "$#" -eq 0 ]; then
+  echo "[entrypoint] Nenhum comando fornecido. Iniciando runserver padrão em 0.0.0.0:8000"
+  set -- python manage.py runserver 0.0.0.0:8000
+fi
+
 # Executa o comando final passado (por CMD ou docker-compose:command)
+echo "[entrypoint] Executando comando: $@"
 exec "$@"
+
