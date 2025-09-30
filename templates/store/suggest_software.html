@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Sugerir Software - Loja de Software{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Sugerir um Software</h5>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">Se você não encontrou o software que precisa, preencha o formulário abaixo para sugerirmos a inclusão na loja.</p>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Nome do Software</label>
+            <input type="text" name="title" class="form-control {% if form.title.errors %}is-invalid{% endif %}" value="{{ form.title.value|default:'' }}" required>
+            {% for error in form.title.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Descrição / Justificativa</label>
+            <textarea name="description" rows="5" class="form-control {% if form.description.errors %}is-invalid{% endif %}">{{ form.description.value|default:'' }}</textarea>
+            {% for error in form.description.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Categoria sugerida</label>
+              <input type="text" name="category" class="form-control {% if form.category.errors %}is-invalid{% endif %}" value="{{ form.category.value|default:'' }}">
+              {% for error in form.category.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Link de referência</label>
+              <input type="url" name="reference_url" class="form-control {% if form.reference_url.errors %}is-invalid{% endif %}" value="{{ form.reference_url.value|default:'' }}" placeholder="https://...">
+              {% for error in form.reference_url.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'store:software_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Enviar sugestão</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

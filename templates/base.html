@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Loja de Software{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        .software-card {
+            transition: transform 0.2s;
+            height: 100%;
+        }
+        .software-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .category-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated %}
+  <div class="bg-light border-bottom py-2 px-3 mb-3 d-flex justify-content-between align-items-center">
+    <span>
+      <strong>{{ user.first_name }} {{ user.last_name }}</strong> ({{ user.email }})
+    </span>
+    <form action="{% url 'store:logout' %}" method="post" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-secondary btn-sm">Sair</button>
+    </form>
+  </div>
+{% endif %}
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'store:software_list' %}">
+                <i class="bi bi-box-seam me-2"></i>Loja de Software
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                {% if user.is_authenticated %}
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'store:software_list' %}">
+                                <i class="bi bi-grid me-1"></i>Catálogo
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'store:suggest_software' %}">
+                                <i class="bi bi-lightbulb me-1"></i>Sugerir software
+                            </a>
+                        </li>
+                    </ul>
+                    <form class="d-flex" action="{% url 'store:software_list' %}" method="get">
+                        <div class="input-group">
+                            <input class="form-control" type="search" name="search" placeholder="Buscar software..." 
+                                   value="{{ request.GET.search|default:'' }}">
+                            <button class="btn btn-outline-light" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">&copy; {% now "Y" %} Loja de Software - Todos os direitos reservados</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="/static/js/main.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <!-- Botão Voltar ao Topo -->
+    <button id="backToTop" class="btn btn-primary rounded-circle position-fixed bottom-0 end-0 m-4" style="display: none;">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+</body>
+</html>
