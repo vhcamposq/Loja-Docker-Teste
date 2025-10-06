@@ -33,4 +33,3 @@ fi
 # Executa o comando final passado (por CMD ou docker-compose:command)
 echo "[entrypoint] Executando comando: $@"
 exec "$@"
-

@@ -1,0 +1,37 @@
+name: software_store_prod
+
+services:
+  web:
+    build:
+      context: .
+    container_name: software_store_web_prod
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: software_store.settings
+      # Configurações de produção HTTPS
+      DEBUG: "0"
+      USE_TLS: "1"
+      ALLOWED_HOSTS: "${DOMAIN_NAME:-seu-dominio.com}"
+      CSRF_TRUSTED_ORIGINS: "https://${DOMAIN_NAME:-seu-dominio.com}"
+      # Banco de dados
+      DATABASE_URL: sqlite:////app/data/db.sqlite3
+      # Configurações Azure AD (definir no .env)
+      # AZUREAD_OAUTH2_KEY=seu_client_id
+      # AZUREAD_OAUTH2_SECRET=seu_client_secret  
+      # AZUREAD_OAUTH2_TENANT_ID=seu_tenant_id
+    ports:
+      - "8000:8000"
+    entrypoint: ["/entrypoint.sh"]
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge

@@ -10,8 +10,12 @@ services:
       - .env
     environment:
       DJANGO_SETTINGS_MODULE: software_store.settings
-      DEBUG: "1"
-      ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+      # Para produção HTTPS, use: DEBUG=0, USE_TLS=1
+      DEBUG: "0"
+      USE_TLS: "1"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0,seu-dominio.com"
+      # URLs HTTPS para CSRF e Azure AD
+      CSRF_TRUSTED_ORIGINS: "https://seu-dominio.com"
       # Habilita o Django a servir arquivos de mídia no container (apenas dev)
       SERVE_MEDIA: "1"
       # Banco SQLite persistente no bind mount /app/data

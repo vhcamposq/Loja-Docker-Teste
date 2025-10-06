@@ -121,22 +121,34 @@ DATABASES = {
     )
 }
 
-# Respect proxy headers if running behind a reverse proxy (e.g., Traefik/Nginx)
-_proxy_hdr = os.environ.get('SECURE_PROXY_SSL_HEADER')
-if _proxy_hdr:
-    try:
-        name, value = _proxy_hdr.split(',')
-        SECURE_PROXY_SSL_HEADER = (name.strip(), value.strip())
-    except ValueError:
-        # Ignore invalid format
-        pass
+# Configurações de segurança HTTPS para produção
+USE_TLS = os.environ.get('USE_TLS', 'False').lower() in ('1', 'true', 'yes')
 
+if USE_TLS:
+    # Força HTTPS em produção
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = 31536000  # 1 ano
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Para social-auth (Azure AD) funcionar com HTTPS
+    SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+else:
+    # Configuração manual de proxy headers (compatibilidade)
+    _proxy_hdr = os.environ.get('SECURE_PROXY_SSL_HEADER')
+    if _proxy_hdr:
+        try:
+            name, value = _proxy_hdr.split(',')
+            SECURE_PROXY_SSL_HEADER = (name.strip(), value.strip())
+        except ValueError:
+            # Ignore invalid format
+            pass
 
-USE_X_FORWARDED_HOST = os.environ.get('USE_X_FORWARDED_HOST', 'False').lower() in ('1', 'true', 'yes')
-SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('1', 'true', 'yes')
-SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('1', 'true', 'yes')
-CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False').lower() in ('1', 'true', 'yes')
-SOCIAL_AUTH_REDIRECT_IS_HTTPS = os.environ.get('SOCIAL_AUTH_REDIRECT_IS_HTTPS', 'False').lower() in ('1', 'true', 'yes')
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
